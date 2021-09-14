@@ -1,1 +1,0 @@
-[{"id":1,"timestamp":1631584456129,"producto":{"nombre":"Harina","descripcion":"algo","foto":"algo","precio":"1000","stock":20,"id":1,"timestamp":1631407446837,"codigo":1}},{"id":3,"timestamp":1631584473769,"producto":{"nombre":"cebolla","descripcion":"cebollaa","foto":"cebolla","precio":"10","stock":5,"id":3,"timestamp":1631407446837,"codigo":3}}]
