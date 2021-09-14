@@ -1,5 +1,8 @@
 const express = require('express');
 const router = express.Router();
+const Archivo = require('../archivo');
+let archivo = new Archivo('productos.txt');
+let archivo2 = new Archivo('carritos.txt');
 
 // let productos = require('../productos/productos.router');
 
@@ -7,6 +10,8 @@ const router = express.Router();
 
 const app = express();
 let carritos = [];
+let productos = [];
+archivo.leer().then(e => productos = JSON.parse(e));
 let administrador = true;
 
 function mensajeNoAdmin(ruta, metodo) {
@@ -26,26 +31,36 @@ function mensajeNoAdmin(ruta, metodo) {
 
 router.get('/listar/:id?', (req, res) => {
 
-
-    if (req.params.id > carritos.length || req.params.id < 0) {
-        res.send(JSON.stringify({ error: 'carrito no encontrado' }));
+    console.log('ID ' + req.params.id);
+    if (req.params.id === undefined) {
+        res.send(JSON.stringify(carritos));
 
     } else {
-        res.send(JSON.stringify(carritos[req.params.id - 1]))
-    }
+        if (req.params.id > carritos.length || req.params.id < 0) {
+            res.send(JSON.stringify({ error: 'carrito no encontrado' }));
 
+        } else {
+            res.send(JSON.stringify(carritos[req.params.id - 1]))
+        }
+    }
     // console.log(productos);
 
 
 });
 
-router.post('/agregar', (req, res) => {
+router.post('/agregar/:id', (req, res) => {
     if (administrador) {
-        console.log(req.body);
-        let obj = req.body;
+        // console.log(req.body);
+        // let obj = req.body;
+        let obj = {};
         obj.id = carritos.length + 1;
-        carritos.push(req.body);
-        res.send(req.body);
+        obj.timestamp = Date.now();
+        console.log("productos " + JSON.stringify(productos));
+        obj.producto = productos[req.params.id - 1];
+        carritos.push(obj);
+        console.log("carritos " + JSON.stringify(carritos));
+        archivo2.guardar(obj);
+        res.send("Se agrego producto al carrito");
     } else {
         res.send(JSON.stringify(mensajeNoAdmin('/carritos', 'listar')));
     }
@@ -58,12 +73,33 @@ router.post('/agregar', (req, res) => {
 
 router.put('/actualizar/:id', (req, res) => {
 
-    console.log(req.body);
+    //console.log(req.body);
     if (administrador) {
-        carritos[req.params.id - 1].titulo = req.body.titulo;
-        carritos[req.params.id - 1].precio = req.body.precio;
-        carritos[req.params.id - 1].foto = req.body.foto;
-        res.send(JSON.stringify(carritos[req.params.id - 1]));
+        // console.log('productos ' + JSON.stringify(productos));
+        let obj = productos.find(p => p.id == req.body.id);
+        // console.log('productos ' + JSON.stringify(productos));
+        // console.log('producto recuperado de productos ' + JSON.stringify(obj));
+        let pos;
+        carritos.forEach(function(elemento, indice, array) {
+            // console.log('elemento ' + JSON.stringify(elemento));
+            // console.log('parametro por ruta ' + req.params.id);
+            // console.log('id ' + elemento.producto.id);
+            // console.log('req.params.id ' + req.params.id);
+            if (elemento.producto.id == req.params.id) {
+                pos = indice;
+                console.log('Posicion del producto en el carrito ' + pos);
+            }
+        })
+
+        if (pos >= 0) {
+            carritos[pos].producto = obj;
+            console.log('carritos ' + JSON.stringify(carritos));
+            archivo2.actualizar(carritos);
+
+            res.send('Ok');
+        } else {
+            res.send('Producto no encontrado en carrito');
+        }
     } else {
         res.send(JSON.stringify(mensajeNoAdmin('/carritos', 'listar')));
     }
@@ -73,14 +109,30 @@ router.put('/actualizar/:id', (req, res) => {
 
 router.delete('/borrar/:id', (req, res) => {
     if (administrador) {
-        let obj = carritos.splice(req.params.id - 1, 1);
-        res.send(JSON.stringify(obj));
+
+        let pos;
+        carritos.forEach(function(elemento, indice, array) {
+            if (elemento.producto.id == req.params.id) {
+                pos = indice;
+                console.log('Posicion del producto en el carrito ' + pos);
+            }
+        })
+
+        if (pos >= 0) {
+            let obj = carritos.splice(pos, 1);
+            archivo2.actualizar(carritos);
+
+            res.send('Ok');
+        } else {
+            res.send('Producto no encontrado en carrito');
+        }
     } else {
         res.send(JSON.stringify(mensajeNoAdmin('/carritos', 'listar')));
     }
 
-
 });
+
+
 
 
 

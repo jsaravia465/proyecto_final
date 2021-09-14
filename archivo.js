@@ -20,14 +20,14 @@ class Archivo {
     async guardar(obj) {
         try {
             if (!fs.existsSync(this.archivo)) {
-                obj['id'] = 1;
+                // obj['id'] = 1;
                 productos.push(obj);
                 await fs.promises.writeFile(this.archivo, JSON.stringify(productos));
                 console.log("Se creo archivo con un producto.");
             } else {
                 const contenido = await fs.promises.readFile(this.archivo, 'utf-8');
                 let arr = JSON.parse(contenido);
-                obj['id'] = parseInt(arr.length) + 1;
+                // obj['id'] = parseInt(arr.length) + 1;
                 //console.log(arr.length);
                 arr.push(obj);
                 await fs.promises.writeFile(this.archivo, JSON.stringify(arr));
@@ -65,6 +65,17 @@ class Archivo {
             console.log('No es posible borrar el archivo.');
         }
 
+    }
+    async actualizar(obj) {
+        try {
+            if (fs.existsSync(this.archivo)) {
+                // obj['id'] = 1;
+                console.log("Ingreso");
+                await fs.promises.writeFile(this.archivo, JSON.stringify(obj));
+            }
+        } catch {
+            console.log('Error al actualizar el archivo');
+        }
     }
 
 }
